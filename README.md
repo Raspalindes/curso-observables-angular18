@@ -115,7 +115,7 @@ export interface Usuario {
   providedIn: "root",
 })
 export class UsuariosService {
-  private apiUrl = "https://jsonplaceholder.typicode.com/users";
+  private apiUrl = "http://localhost:3000/usuarios";
 
   constructor(private http: HttpClient) {}
 
@@ -366,7 +366,7 @@ numeros$
 Crea un servicio `ProductosService` que:
 
 - Tenga un método `obtenerProductos()` que retorne un `Observable<Producto[]>`
-- Use HttpClient para consumir: `https://fakestoreapi.com/products`
+- Use HttpClient para consumir: `http://localhost:3000/productos`
 - Limite los resultados a 5 productos usando `map`
 - Maneje errores con `catchError` retornando un array vacío
 
@@ -401,7 +401,7 @@ export interface Producto {
   providedIn: "root",
 })
 export class ProductosService {
-  private apiUrl = "https://fakestoreapi.com/products";
+  private apiUrl = "http://localhost:3000/productos";
 
   constructor(private http: HttpClient) {}
 
@@ -524,7 +524,7 @@ Crea un buscador de usuarios que:
 - Use `switchMap` para cancelar búsquedas anteriores
 - Muestre "Escribe para buscar..." cuando el input esté vacío
 
-API: `https://jsonplaceholder.typicode.com/users`
+API: `http://localhost:3000/usuarios`
 
 <details>
 <summary>👁️ Ver solución</summary>
@@ -553,23 +553,6 @@ export class BuscadorComponent {
     );
   }
 }
-```
-
-```html
-<!-- buscador.component.html -->
-<div class="buscador">
-  <input type="text" [formControl]="busqueda" placeholder="Buscar usuarios..." />
-
-  @if (resultados$ | async; as resultados) { @if (resultados.length > 0) {
-  <ul>
-    @for (usuario of resultados; track usuario.id) {
-    <li>{{ usuario.nombre }}</li>
-    }
-  </ul>
-  } @else if (busqueda.value) {
-  <p>No se encontraron resultados</p>
-  } }
-</div>
 ```
 
 </details>
@@ -664,8 +647,8 @@ export class ContadorComponent {
 
 Tienes dos endpoints:
 
-- `https://jsonplaceholder.typicode.com/users/1` (usuario)
-- `https://jsonplaceholder.typicode.com/posts?userId=1` (posts del usuario)
+- `http://localhost:3000/usuarios/1` (usuario)
+- `http://localhost:3000/posts?userId=1` (posts del usuario)
 
 Crea un componente que:
 
@@ -713,9 +696,9 @@ export class UsuarioPostsComponent implements OnInit {
   constructor(private http: HttpClient) {}
 
   ngOnInit() {
-    this.resultado$ = this.http.get<Usuario>("https://jsonplaceholder.typicode.com/users/1").pipe(
+    this.resultado$ = this.http.get<Usuario>("http://localhost:3000/usuarios/1").pipe(
       switchMap((usuario) =>
-        this.http.get<Post[]>(`https://jsonplaceholder.typicode.com/posts?userId=${usuario.id}`).pipe(
+        this.http.get<Post[]>(`http://localhost:3000/posts?userId=${usuario.id}`).pipe(
           map((posts) => ({
             nombreUsuario: usuario.name,
             cantidadPosts: posts.length,
@@ -792,7 +775,7 @@ export interface Producto {
   providedIn: "root",
 })
 export class ProductosService {
-  private apiUrl = "https://fakestoreapi.com/products";
+  private apiUrl = "http://localhost:3000/productos";
 
   constructor(private http: HttpClient) {}
 
@@ -1021,101 +1004,24 @@ export class TareasComponent {
 ```
 
 ```css
-/* tareas.component.css */
+/* tareas.component.css (simplificado) */
 .tareas-app {
-  max-width: 600px;
-  margin: 2rem auto;
-  padding: 1rem;
+  margin: 0 auto;
 }
-
-.agregar-tarea {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.agregar-tarea input {
-  flex: 1;
-  padding: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-.agregar-tarea button {
-  padding: 0.5rem 1rem;
-  background: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.buscador {
-  margin-bottom: 1rem;
-}
-
-.buscador input {
-  width: 100%;
-  padding: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
+.agregar-tarea,
+.buscador,
 .filtros {
-  display: flex;
-  gap: 0.5rem;
   margin-bottom: 1rem;
 }
-
-.filtros button {
-  padding: 0.5rem 1rem;
-  background: #f0f0f0;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.filtros button.activo {
-  background: #007bff;
-  color: white;
-}
-
 .lista-tareas {
   list-style: none;
   padding: 0;
 }
-
-.lista-tareas li {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  margin-bottom: 0.5rem;
-}
-
 .lista-tareas li.completada span {
   text-decoration: line-through;
-  color: #999;
 }
-
-.lista-tareas li span {
-  flex: 1;
-}
-
-.lista-tareas li button.eliminar {
-  background: #dc3545;
-  color: white;
-  border: none;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
 .lista-tareas li.vacio {
   text-align: center;
-  color: #999;
 }
 ```
 
