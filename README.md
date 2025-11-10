@@ -1,5 +1,16 @@
 # Curso Básico: Observables en Angular 18
 
+## Índice
+
+1. [Fundamentos de Observables](#fundamentos-de-observables)
+2. [Operadores con pipe](#operadores-con-pipe)
+3. [HttpClient y Servicios](#httpclient-y-servicios)
+4. [Uso en Componentes](#uso-en-componentes)
+5. [Async pipe y manejo reactivo](#async-pipe-y-manejo-reactivo)
+6. [Ejercicios Prácticos](#ejercicios-prácticos)
+
+---
+
 ## 📚 Módulo 1: Fundamentos de Observables
 
 ### ¿Qué es un Observable?
@@ -299,129 +310,20 @@ export class UsuariosReactiveComponent implements OnInit {
 
 ---
 
-## 📚 Módulo 6: Directivas Angular 18 y buenas prácticas
-
-### Nuevas directivas de control de flujo
-
-Angular 18 introduce sintaxis simplificada para condiciones y bucles:
-
-#### `@if` / `@else`
-
-```html
-@if (usuario$ | async; as usuario) {
-<h2>Bienvenido, {{ usuario.nombre }}</h2>
-} @else {
-<p>No hay usuario</p>
-}
-```
-
-#### `@for` con `track`
-
-```html
-<!-- track es OBLIGATORIO para optimización -->
-@for (item of items$ | async; track item.id) {
-<div>{{ item.nombre }}</div>
-} @empty {
-<p>Lista vacía</p>
-}
-```
-
-#### `@defer` - Carga diferida
-
-```html
-<!-- Carga el componente solo cuando sea visible -->
-@defer (on viewport) {
-<app-comentarios [postId]="postId"></app-comentarios>
-} @placeholder {
-<p>Cargando comentarios...</p>
-} @loading (minimum 500ms) {
-<div class="spinner"></div>
-} @error {
-<p>Error al cargar comentarios</p>
-}
-```
-
-### Ejemplo completo: Buscador reactivo
-
-```typescript
-// buscador.component.ts
-import { Component } from "@angular/core";
-import { FormControl } from "@angular/forms";
-import { Observable } from "rxjs";
-import { debounceTime, distinctUntilChanged, switchMap, map } from "rxjs/operators";
-import { UsuariosService, Usuario } from "./usuarios.service";
-
-@Component({
-  selector: "app-buscador",
-  templateUrl: "./buscador.component.html",
-})
-export class BuscadorComponent {
-  busqueda = new FormControl("");
-  resultados$: Observable<Usuario[]>;
-
-  constructor(private usuariosService: UsuariosService) {
-    this.resultados$ = this.busqueda.valueChanges.pipe(
-      debounceTime(300), // Espera 300ms después de que el usuario deje de escribir
-      distinctUntilChanged(), // Solo si el valor cambió
-      switchMap((termino) => (termino ? this.usuariosService.obtenerUsuarios().pipe(map((usuarios) => usuarios.filter((u) => u.nombre.toLowerCase().includes(termino.toLowerCase())))) : []))
-    );
-  }
-}
-```
-
-```html
-<!-- buscador.component.html -->
-<div class="buscador">
-  <input type="text" [formControl]="busqueda" placeholder="Buscar usuarios..." />
-
-  @if (resultados$ | async; as resultados) { @if (resultados.length > 0) {
-  <ul>
-    @for (usuario of resultados; track usuario.id) {
-    <li>{{ usuario.nombre }}</li>
-    }
-  </ul>
-  } @else if (busqueda.value) {
-  <p>No se encontraron resultados</p>
-  } }
-</div>
-```
-
-### ✅ Checklist de buenas prácticas
-
-1. **Usa `async pipe`** siempre que sea posible (evita fugas de memoria)
-2. **Desuscríbete manualmente** solo si no usas `async pipe`
-3. **Nombra Observables con `$`** al final
-4. **Usa `catchError`** para manejar errores gracefully
-5. **Prefiere `switchMap`** para búsquedas y peticiones dependientes
-6. **Usa `track` en `@for`** para optimizar renderizado
-7. **Combina operadores** en un solo `pipe()` para claridad
-8. **Inicializa con `startWith`** para estados de carga
-9. **Usa `@defer`** para componentes pesados que no se necesitan inmediatamente
-
----
-
-## 🎯 Resumen final
-
-**Observables** son la base de la programación reactiva en Angular. Te permiten:
-
-- Manejar datos asíncronos elegantemente
-- Transformar flujos de datos con operadores
-- Evitar callback hell
-- Cancelar operaciones fácilmente
-
-**Patrón recomendado:**
-
-1. Crea servicios que retornen `Observable<T>`
-2. Usa `pipe` con operadores para transformar datos
-3. Maneja errores con `catchError`
-4. En componentes, usa `async pipe` para suscribirte
-5. Aprovecha las nuevas directivas `@if`, `@for`, `@defer` de Angular 18
-
-¡Con esto tienes todo lo esencial para trabajar con Observables en Angular 18! 🚀
-
----
-
 ## 💪 Ejercicios Prácticos
+
+### Índice de Ejercicios
+
+1. [Ejercicio 1: Transformar datos básicos](#ejercicio-1-transformar-datos-básicos)
+2. [Ejercicio 2: Servicio de productos](#ejercicio-2-servicio-de-productos)
+3. [Ejercicio 3: Componente con async pipe](#ejercicio-3-componente-con-async-pipe)
+4. [Ejercicio 4: Buscador con debounce](#ejercicio-4-buscador-con-debounce)
+5. [Ejercicio 5: Evitar fugas de memoria](#ejercicio-5-evitar-fugas-de-memoria)
+6. [Ejercicio 6: Combinar Observables](#ejercicio-6-combinar-observables)
+7. [Ejercicio 7: Implementar retry](#ejercicio-7-implementar-retry)
+8. [Desafío Final](#desafío-final)
+
+---
 
 ### Ejercicio 1: Transformar datos básicos
 
@@ -435,35 +337,41 @@ Tienes un Observable que emite números del 1 al 10. Usa `pipe` y `map` para:
 
 <details>
 <summary>👁️ Ver solución</summary>
+
 ```typescript
-import { of } from 'rxjs';
-import { map, filter } from 'rxjs/operators';
+import { of } from "rxjs";
+import { map, filter } from "rxjs/operators";
 
 const numeros$ = of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
 
-numeros$.pipe(
-map(num => num \* 3),
-map(num => num + 5),
-filter(num => num > 20)
-).subscribe({
-next: (valor) => console.log(valor) // 23, 26, 29, 32, 35
-});
+numeros$
+  .pipe(
+    map((num) => num * 3),
+    map((num) => num + 5),
+    filter((num) => num > 20)
+  )
+  .subscribe({
+    next: (valor) => console.log(valor), // 23, 26, 29, 32, 35
+  });
+```
 
-````
 </details>
 
 ---
 
 ### Ejercicio 2: Servicio de productos
+
 **Nivel: Principiante**
 
 Crea un servicio `ProductosService` que:
+
 - Tenga un método `obtenerProductos()` que retorne un `Observable<Producto[]>`
 - Use HttpClient para consumir: `https://fakestoreapi.com/products`
 - Limite los resultados a 5 productos usando `map`
 - Maneje errores con `catchError` retornando un array vacío
 
 Interfaz sugerida:
+
 ```typescript
 interface Producto {
   id: number;
@@ -471,51 +379,54 @@ interface Producto {
   price: number;
   image: string;
 }
-````
+```
 
 <details>
 <summary>👁️ Ver solución</summary>
+
 ```typescript
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { Injectable } from "@angular/core";
+import { HttpClient } from "@angular/common/http";
+import { Observable, of } from "rxjs";
+import { map, catchError } from "rxjs/operators";
 
 export interface Producto {
-id: number;
-title: string;
-price: number;
-image: string;
+  id: number;
+  title: string;
+  price: number;
+  image: string;
 }
 
 @Injectable({
-providedIn: 'root'
+  providedIn: "root",
 })
 export class ProductosService {
-private apiUrl = 'https://fakestoreapi.com/products';
+  private apiUrl = "https://fakestoreapi.com/products";
 
-constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {}
 
-obtenerProductos(): Observable<Producto[]> {
-return this.http.get<Producto[]>(this.apiUrl).pipe(
-map(productos => productos.slice(0, 5)),
-catchError(error => {
-console.error('Error al obtener productos:', error);
-return of([]);
-})
-);
+  obtenerProductos(): Observable<Producto[]> {
+    return this.http.get<Producto[]>(this.apiUrl).pipe(
+      map((productos) => productos.slice(0, 5)),
+      catchError((error) => {
+        console.error("Error al obtener productos:", error);
+        return of([]);
+      })
+    );
+  }
 }
-}
+```
 
-````
 </details>
 
 ---
 
 ### Ejercicio 3: Componente con async pipe
+
 **Nivel: Intermedio**
 
 Crea un componente `ProductosComponent` que:
+
 - Use el servicio del ejercicio anterior
 - Muestre los productos usando `async pipe`
 - Use las directivas `@if` y `@for` de Angular 18
@@ -524,12 +435,13 @@ Crea un componente `ProductosComponent` que:
 
 <details>
 <summary>👁️ Ver solución</summary>
+
 ```typescript
 // productos.component.ts
-import { Component, OnInit } from '@angular/core';
-import { Observable, of } from 'rxjs';
-import { catchError, map, startWith } from 'rxjs/operators';
-import { ProductosService, Producto } from './productos.service';
+import { Component, OnInit } from "@angular/core";
+import { Observable, of } from "rxjs";
+import { catchError, map, startWith } from "rxjs/operators";
+import { ProductosService, Producto } from "./productos.service";
 
 interface Estado {
   productos: Producto[];
@@ -538,8 +450,8 @@ interface Estado {
 }
 
 @Component({
-  selector: 'app-productos',
-  templateUrl: './productos.component.html'
+  selector: "app-productos",
+  templateUrl: "./productos.component.html",
 })
 export class ProductosComponent implements OnInit {
   estado$!: Observable<Estado>;
@@ -548,25 +460,27 @@ export class ProductosComponent implements OnInit {
 
   ngOnInit() {
     this.estado$ = this.productosService.obtenerProductos().pipe(
-      map(productos => ({
+      map((productos) => ({
         productos,
         cargando: false,
-        error: null
+        error: null,
       })),
-      catchError(() => of({
-        productos: [],
-        cargando: false,
-        error: 'Error al cargar productos'
-      })),
+      catchError(() =>
+        of({
+          productos: [],
+          cargando: false,
+          error: "Error al cargar productos",
+        })
+      ),
       startWith({
         productos: [],
         cargando: true,
-        error: null
+        error: null,
       })
     );
   }
 }
-````
+```
 
 ```html
 <!-- productos.component.html -->
@@ -614,76 +528,49 @@ API: `https://jsonplaceholder.typicode.com/users`
 
 <details>
 <summary>👁️ Ver solución</summary>
-```typescript
-// buscador-usuarios.component.ts
-import { Component } from '@angular/core';
-import { FormControl } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
-import { debounceTime, distinctUntilChanged, switchMap, map } from 'rxjs/operators';
 
-interface Usuario {
-id: number;
-name: string;
-email: string;
-}
+```typescript
+// buscador.component.ts
+import { Component } from "@angular/core";
+import { FormControl } from "@angular/forms";
+import { Observable } from "rxjs";
+import { debounceTime, distinctUntilChanged, switchMap, map } from "rxjs/operators";
+import { UsuariosService, Usuario } from "./usuarios.service";
 
 @Component({
-selector: 'app-buscador-usuarios',
-templateUrl: './buscador-usuarios.component.html'
+  selector: "app-buscador",
+  templateUrl: "./buscador.component.html",
 })
-export class BuscadorUsuariosComponent {
-busqueda = new FormControl('');
-resultados$: Observable<Usuario[]>;
+export class BuscadorComponent {
+  busqueda = new FormControl("");
+  resultados$: Observable<Usuario[]>;
 
-constructor(private http: HttpClient) {
-this.resultados$ = this.busqueda.valueChanges.pipe(
-debounceTime(400),
-distinctUntilChanged(),
-switchMap(termino => {
-if (!termino || termino.trim() === '') {
-return of([]);
-}
-return this.http.get<Usuario[]>('https://jsonplaceholder.typicode.com/users').pipe(
-map(usuarios => usuarios.filter(u =>
-u.name.toLowerCase().includes(termino.toLowerCase())
-))
-);
-})
-);
-}
-}
-
-````
-```html
-<!-- buscador-usuarios.component.html -->
-<div class="buscador">
-  <input
-    type="text"
-    [formControl]="busqueda"
-    placeholder="Buscar usuarios por nombre..."
-  >
-
-  @if (resultados$ | async; as resultados) {
-    @if (busqueda.value && busqueda.value.trim() !== '') {
-      @if (resultados.length > 0) {
-        <ul class="resultados">
-          @for (usuario of resultados; track usuario.id) {
-            <li>
-              <strong>{{ usuario.name }}</strong>
-              <span>{{ usuario.email }}</span>
-            </li>
-          }
-        </ul>
-      } @else {
-        <p class="sin-resultados">No se encontraron usuarios</p>
-      }
-    } @else {
-      <p class="placeholder">Escribe para buscar...</p>
-    }
+  constructor(private usuariosService: UsuariosService) {
+    this.resultados$ = this.busqueda.valueChanges.pipe(
+      debounceTime(300), // Espera 300ms después de que el usuario deje de escribir
+      distinctUntilChanged(), // Solo si el valor cambió
+      switchMap((termino) => (termino ? this.usuariosService.obtenerUsuarios().pipe(map((usuarios) => usuarios.filter((u) => u.nombre.toLowerCase().includes(termino.toLowerCase())))) : []))
+    );
   }
+}
+```
+
+```html
+<!-- buscador.component.html -->
+<div class="buscador">
+  <input type="text" [formControl]="busqueda" placeholder="Buscar usuarios..." />
+
+  @if (resultados$ | async; as resultados) { @if (resultados.length > 0) {
+  <ul>
+    @for (usuario of resultados; track usuario.id) {
+    <li>{{ usuario.nombre }}</li>
+    }
+  </ul>
+  } @else if (busqueda.value) {
+  <p>No se encontraron resultados</p>
+  } }
 </div>
-````
+```
 
 </details>
 
@@ -790,83 +677,86 @@ Crea un componente que:
 
 <details>
 <summary>👁️ Ver solución</summary>
+
 ```typescript
 // usuario-posts.component.ts
-import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
-import { switchMap, map, catchError, startWith } from 'rxjs/operators';
+import { Component, OnInit } from "@angular/core";
+import { HttpClient } from "@angular/common/http";
+import { Observable, of } from "rxjs";
+import { switchMap, map, catchError, startWith } from "rxjs/operators";
 
 interface Usuario {
-id: number;
-name: string;
+  id: number;
+  name: string;
 }
 
 interface Post {
-id: number;
-userId: number;
-title: string;
+  id: number;
+  userId: number;
+  title: string;
 }
 
 interface Resultado {
-nombreUsuario: string;
-cantidadPosts: number;
-cargando: boolean;
-error: string | null;
+  nombreUsuario: string;
+  cantidadPosts: number;
+  cargando: boolean;
+  error: string | null;
 }
 
 @Component({
-selector: 'app-usuario-posts',
-templateUrl: './usuario-posts.component.html'
+  selector: "app-usuario-posts",
+  templateUrl: "./usuario-posts.component.html",
 })
 export class UsuarioPostsComponent implements OnInit {
-resultado$!: Observable<Resultado>;
+  resultado$!: Observable<Resultado>;
 
-constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {}
 
-ngOnInit() {
-this.resultado$ = this.http.get<Usuario>('https://jsonplaceholder.typicode.com/users/1').pipe(
-switchMap(usuario =>
-this.http.get<Post[]>(`https://jsonplaceholder.typicode.com/posts?userId=${usuario.id}`).pipe(
-map(posts => ({
-nombreUsuario: usuario.name,
-cantidadPosts: posts.length,
-cargando: false,
-error: null
-}))
-)
-),
-catchError(() => of({
-nombreUsuario: '',
-cantidadPosts: 0,
-cargando: false,
-error: 'Error al cargar datos'
-})),
-startWith({
-nombreUsuario: '',
-cantidadPosts: 0,
-cargando: true,
-error: null
-})
-);
+  ngOnInit() {
+    this.resultado$ = this.http.get<Usuario>("https://jsonplaceholder.typicode.com/users/1").pipe(
+      switchMap((usuario) =>
+        this.http.get<Post[]>(`https://jsonplaceholder.typicode.com/posts?userId=${usuario.id}`).pipe(
+          map((posts) => ({
+            nombreUsuario: usuario.name,
+            cantidadPosts: posts.length,
+            cargando: false,
+            error: null,
+          }))
+        )
+      ),
+      catchError(() =>
+        of({
+          nombreUsuario: "",
+          cantidadPosts: 0,
+          cargando: false,
+          error: "Error al cargar datos",
+        })
+      ),
+      startWith({
+        nombreUsuario: "",
+        cantidadPosts: 0,
+        cargando: true,
+        error: null,
+      })
+    );
+  }
 }
-}
+```
 
-````
 ```html
 <!-- usuario-posts.component.html -->
 @if (resultado$ | async; as resultado) {
-  <div class="resultado">
-    @if (resultado.cargando) {
-      <p>Cargando información...</p>
-    } @else if (resultado.error) {
-      <p class="error">{{ resultado.error }}</p>
-    } @else {
-      <h2>Usuario {{ resultado.nombreUsuario }} tiene {{ resultado.cantidadPosts }} posts</h2>
-    }
-  </div>
+<div class="resultado">
+  @if (resultado.cargando) {
+  <p>Cargando información...</p>
+  } @else if (resultado.error) {
+  <p class="error">{{ resultado.error }}</p>
+  } @else {
+  <h2>Usuario {{ resultado.nombreUsuario }} tiene {{ resultado.cantidadPosts }} posts</h2>
+  }
+</div>
 }
-````
+```
 
 </details>
 
@@ -885,61 +775,62 @@ Modifica el servicio de productos para que:
 
 <details>
 <summary>👁️ Ver solución</summary>
+
 ```typescript
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, of, throwError } from 'rxjs';
-import { map, catchError, retry, retryWhen, delay, tap, take } from 'rxjs/operators';
+import { Injectable } from "@angular/core";
+import { HttpClient } from "@angular/common/http";
+import { Observable, of, throwError } from "rxjs";
+import { map, catchError, retry, retryWhen, delay, tap, take } from "rxjs/operators";
 
 export interface Producto {
-id: number;
-title: string;
-price: number;
+  id: number;
+  title: string;
+  price: number;
 }
 
 @Injectable({
-providedIn: 'root'
+  providedIn: "root",
 })
 export class ProductosService {
-private apiUrl = 'https://fakestoreapi.com/products';
+  private apiUrl = "https://fakestoreapi.com/products";
 
-constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {}
 
-obtenerProductos(): Observable<Producto[]> {
-return this.http.get<Producto[]>(this.apiUrl).pipe(
-map(productos => productos.slice(0, 5)),
-retryWhen(errors =>
-errors.pipe(
-tap((error, index) => console.log(`Reintento ${index + 1} de 3...`)),
-delay(1000),
-take(3),
-// Si agota los 3 intentos, propaga el error
-tap({
-complete: () => console.log('Se agotaron los reintentos')
-})
-)
-),
-catchError(error => {
-console.error('Error definitivo:', error);
-return of([]);
-})
-);
+  obtenerProductos(): Observable<Producto[]> {
+    return this.http.get<Producto[]>(this.apiUrl).pipe(
+      map((productos) => productos.slice(0, 5)),
+      retryWhen((errors) =>
+        errors.pipe(
+          tap((error, index) => console.log(`Reintento ${index + 1} de 3...`)),
+          delay(1000),
+          take(3),
+          // Si agota los 3 intentos, propaga el error
+          tap({
+            complete: () => console.log("Se agotaron los reintentos"),
+          })
+        )
+      ),
+      catchError((error) => {
+        console.error("Error definitivo:", error);
+        return of([]);
+      })
+    );
+  }
+
+  // Alternativa más simple con retry básico
+  obtenerProductosSimple(): Observable<Producto[]> {
+    return this.http.get<Producto[]>(this.apiUrl).pipe(
+      retry(3), // Reintenta hasta 3 veces
+      map((productos) => productos.slice(0, 5)),
+      catchError((error) => {
+        console.error("Error después de 3 intentos:", error);
+        return of([]);
+      })
+    );
+  }
 }
+```
 
-// Alternativa más simple con retry básico
-obtenerProductosSimple(): Observable<Producto[]> {
-return this.http.get<Producto[]>(this.apiUrl).pipe(
-retry(3), // Reintenta hasta 3 veces
-map(productos => productos.slice(0, 5)),
-catchError(error => {
-console.error('Error después de 3 intentos:', error);
-return of([]);
-})
-);
-}
-}
-
-````
 </details>
 
 ---
@@ -949,6 +840,7 @@ return of([]);
 Crea una aplicación completa de "Lista de Tareas" con estas características:
 
 **Requisitos funcionales:**
+
 - Agregar nuevas tareas
 - Marcar tareas como completadas
 - Filtrar tareas (todas/completadas/pendientes)
@@ -957,6 +849,7 @@ Crea una aplicación completa de "Lista de Tareas" con estas características:
 - Todo debe ser reactivo (usar Observables)
 
 **Requisitos técnicos:**
+
 - Usar `BehaviorSubject` para el estado de las tareas
 - Usar `async pipe` en toda la plantilla
 - Usar operadores: `map`, `filter`, `debounceTime`, `distinctUntilChanged`
@@ -966,11 +859,12 @@ Crea una aplicación completa de "Lista de Tareas" con estas características:
 
 <details>
 <summary>👁️ Ver solución completa</summary>
+
 ```typescript
 // tareas.service.ts
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Injectable } from "@angular/core";
+import { BehaviorSubject, Observable, combineLatest } from "rxjs";
+import { map } from "rxjs/operators";
 
 export interface Tarea {
   id: number;
@@ -978,15 +872,15 @@ export interface Tarea {
   completada: boolean;
 }
 
-export type Filtro = 'todas' | 'completadas' | 'pendientes';
+export type Filtro = "todas" | "completadas" | "pendientes";
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: "root",
 })
 export class TareasService {
   private tareasSubject = new BehaviorSubject<Tarea[]>([]);
-  private filtroSubject = new BehaviorSubject<Filtro>('todas');
-  private busquedaSubject = new BehaviorSubject<string>('');
+  private filtroSubject = new BehaviorSubject<Filtro>("todas");
+  private busquedaSubject = new BehaviorSubject<string>("");
 
   private contadorId = 1;
 
@@ -994,26 +888,20 @@ export class TareasService {
   filtro$ = this.filtroSubject.asObservable();
   busqueda$ = this.busquedaSubject.asObservable();
 
-  tareasFiltradas$: Observable<Tarea[]> = combineLatest([
-    this.tareas$,
-    this.filtro$,
-    this.busqueda$
-  ]).pipe(
+  tareasFiltradas$: Observable<Tarea[]> = combineLatest([this.tareas$, this.filtro$, this.busqueda$]).pipe(
     map(([tareas, filtro, busqueda]) => {
       // Aplicar filtro
       let resultado = tareas;
 
-      if (filtro === 'completadas') {
-        resultado = resultado.filter(t => t.completada);
-      } else if (filtro === 'pendientes') {
-        resultado = resultado.filter(t => !t.completada);
+      if (filtro === "completadas") {
+        resultado = resultado.filter((t) => t.completada);
+      } else if (filtro === "pendientes") {
+        resultado = resultado.filter((t) => !t.completada);
       }
 
       // Aplicar búsqueda
-      if (busqueda.trim() !== '') {
-        resultado = resultado.filter(t =>
-          t.texto.toLowerCase().includes(busqueda.toLowerCase())
-        );
+      if (busqueda.trim() !== "") {
+        resultado = resultado.filter((t) => t.texto.toLowerCase().includes(busqueda.toLowerCase()));
       }
 
       return resultado;
@@ -1025,20 +913,18 @@ export class TareasService {
     const nuevaTarea: Tarea = {
       id: this.contadorId++,
       texto,
-      completada: false
+      completada: false,
     };
     this.tareasSubject.next([...tareas, nuevaTarea]);
   }
 
   toggleCompletada(id: number) {
-    const tareas = this.tareasSubject.value.map(t =>
-      t.id === id ? { ...t, completada: !t.completada } : t
-    );
+    const tareas = this.tareasSubject.value.map((t) => (t.id === id ? { ...t, completada: !t.completada } : t));
     this.tareasSubject.next(tareas);
   }
 
   eliminarTarea(id: number) {
-    const tareas = this.tareasSubject.value.filter(t => t.id !== id);
+    const tareas = this.tareasSubject.value.filter((t) => t.id !== id);
     this.tareasSubject.next(tareas);
   }
 
@@ -1050,7 +936,7 @@ export class TareasService {
     this.busquedaSubject.next(termino);
   }
 }
-````
+```
 
 ```typescript
 // tareas.component.ts
