@@ -831,11 +831,9 @@ Crea una aplicación completa de "Lista de Tareas" con estas características:
 - Buscador con debounce
 - Todo debe ser reactivo (usar Observables)
 
-**Requisitos técnicos:**
+**Requisitos técnicos (Angular 18):**
 
-- Usar `BehaviorSubject` para el estado de las tareas
-- Usar `async pipe` en toda la plantilla
-- Usar operadores: `map`, `filter`, `debounceTime`, `distinctUntilChanged`
+- Usar `Signal` y `computed` para el estado de las tareas
 - Usar directivas `@if`, `@for` de Angular 18
 - Sin fugas de memoria
 - Código limpio y bien estructurado
@@ -844,10 +842,8 @@ Crea una aplicación completa de "Lista de Tareas" con estas características:
 <summary>👁️ Ver solución completa</summary>
 
 ```typescript
-// tareas.service.ts
-import { Injectable } from "@angular/core";
-import { BehaviorSubject, Observable, combineLatest } from "rxjs";
-import { map } from "rxjs/operators";
+// tareas.service.ts (Angular 18 con Signal)
+import { Injectable, signal, computed } from "@angular/core";
 
 export interface Tarea {
   id: number;
@@ -857,76 +853,59 @@ export interface Tarea {
 
 export type Filtro = "todas" | "completadas" | "pendientes";
 
-@Injectable({
-  providedIn: "root",
-})
+@Injectable({ providedIn: "root" })
 export class TareasService {
-  private tareasSubject = new BehaviorSubject<Tarea[]>([]);
-  private filtroSubject = new BehaviorSubject<Filtro>("todas");
-  private busquedaSubject = new BehaviorSubject<string>("");
-
+  private tareas = signal<Tarea[]>([]);
+  private filtro = signal<Filtro>("todas");
+  private busqueda = signal<string>("");
   private contadorId = 1;
 
-  tareas$ = this.tareasSubject.asObservable();
-  filtro$ = this.filtroSubject.asObservable();
-  busqueda$ = this.busquedaSubject.asObservable();
-
-  tareasFiltradas$: Observable<Tarea[]> = combineLatest([this.tareas$, this.filtro$, this.busqueda$]).pipe(
-    map(([tareas, filtro, busqueda]) => {
-      // Aplicar filtro
-      let resultado = tareas;
-
-      if (filtro === "completadas") {
-        resultado = resultado.filter((t) => t.completada);
-      } else if (filtro === "pendientes") {
-        resultado = resultado.filter((t) => !t.completada);
-      }
-
-      // Aplicar búsqueda
-      if (busqueda.trim() !== "") {
-        resultado = resultado.filter((t) => t.texto.toLowerCase().includes(busqueda.toLowerCase()));
-      }
-
-      return resultado;
-    })
-  );
+  tareasFiltradas = computed(() => {
+    let resultado = this.tareas();
+    const filtro = this.filtro();
+    const busqueda = this.busqueda().trim().toLowerCase();
+    if (filtro === "completadas") {
+      resultado = resultado.filter((t) => t.completada);
+    } else if (filtro === "pendientes") {
+      resultado = resultado.filter((t) => !t.completada);
+    }
+    if (busqueda !== "") {
+      resultado = resultado.filter((t) => t.texto.toLowerCase().includes(busqueda));
+    }
+    return resultado;
+  });
 
   agregarTarea(texto: string) {
-    const tareas = this.tareasSubject.value;
     const nuevaTarea: Tarea = {
       id: this.contadorId++,
       texto,
       completada: false,
     };
-    this.tareasSubject.next([...tareas, nuevaTarea]);
+    this.tareas.update((tareas) => [...tareas, nuevaTarea]);
   }
 
   toggleCompletada(id: number) {
-    const tareas = this.tareasSubject.value.map((t) => (t.id === id ? { ...t, completada: !t.completada } : t));
-    this.tareasSubject.next(tareas);
+    this.tareas.update((tareas) => tareas.map((t) => (t.id === id ? { ...t, completada: !t.completada } : t)));
   }
 
   eliminarTarea(id: number) {
-    const tareas = this.tareasSubject.value.filter((t) => t.id !== id);
-    this.tareasSubject.next(tareas);
+    this.tareas.update((tareas) => tareas.filter((t) => t.id !== id));
   }
 
   cambiarFiltro(filtro: Filtro) {
-    this.filtroSubject.next(filtro);
+    this.filtro.set(filtro);
   }
 
   actualizarBusqueda(termino: string) {
-    this.busquedaSubject.next(termino);
+    this.busqueda.set(termino);
   }
 }
 ```
 
 ```typescript
-// tareas.component.ts
+// tareas.component.ts (Angular 18 con Signal)
 import { Component } from "@angular/core";
-import { FormControl } from "@angular/forms";
 import { TareasService, Filtro } from "./tareas.service";
-import { debounceTime, distinctUntilChanged } from "rxjs/operators";
 
 @Component({
   selector: "app-tareas",
@@ -934,62 +913,56 @@ import { debounceTime, distinctUntilChanged } from "rxjs/operators";
   styleUrls: ["./tareas.component.css"],
 })
 export class TareasComponent {
-  nuevaTareaControl = new FormControl("");
-  busquedaControl = new FormControl("");
+  nuevaTarea = "";
+  busqueda = "";
 
-  tareas$ = this.tareasService.tareasFiltradas$;
-  filtroActual$ = this.tareasService.filtro$;
-
-  constructor(public tareasService: TareasService) {
-    // Configurar búsqueda con debounce
-    this.busquedaControl.valueChanges.pipe(debounceTime(300), distinctUntilChanged()).subscribe((termino) => {
-      this.tareasService.actualizarBusqueda(termino || "");
-    });
-  }
+  constructor(public tareasService: TareasService) {}
 
   agregarTarea() {
-    const texto = this.nuevaTareaControl.value?.trim();
+    const texto = this.nuevaTarea.trim();
     if (texto) {
       this.tareasService.agregarTarea(texto);
-      this.nuevaTareaControl.reset();
+      this.nuevaTarea = "";
     }
   }
 
   cambiarFiltro(filtro: Filtro) {
     this.tareasService.cambiarFiltro(filtro);
   }
+
+  actualizarBusqueda(termino: string) {
+    this.tareasService.actualizarBusqueda(termino);
+    this.busqueda = termino;
+  }
 }
 ```
 
 ```html
-<!-- tareas.component.html -->
+<!-- tareas.component.html (Angular 18 con Signal) -->
 <div class="tareas-app">
   <h1>Lista de Tareas Reactiva</h1>
 
   <!-- Agregar nueva tarea -->
   <div class="agregar-tarea">
-    <input type="text" [formControl]="nuevaTareaControl" placeholder="Escribe una nueva tarea..." (keyup.enter)="agregarTarea()" />
+    <input type="text" [(ngModel)]="nuevaTarea" placeholder="Escribe una nueva tarea..." (keyup.enter)="agregarTarea()" />
     <button (click)="agregarTarea()">Agregar</button>
   </div>
 
   <!-- Buscador -->
   <div class="buscador">
-    <input type="text" [formControl]="busquedaControl" placeholder="Buscar tareas..." />
+    <input type="text" [(ngModel)]="busqueda" (input)="actualizarBusqueda(busqueda)" placeholder="Buscar tareas..." />
   </div>
 
   <!-- Filtros -->
-  @if (filtroActual$ | async; as filtroActual) {
   <div class="filtros">
-    <button (click)="cambiarFiltro('todas')" [class.activo]="filtroActual === 'todas'">Todas</button>
-    <button (click)="cambiarFiltro('pendientes')" [class.activo]="filtroActual === 'pendientes'">Pendientes</button>
-    <button (click)="cambiarFiltro('completadas')" [class.activo]="filtroActual === 'completadas'">Completadas</button>
+    <button (click)="cambiarFiltro('todas')" [class.activo]="tareasService.filtro() === 'todas'">Todas</button>
+    <button (click)="cambiarFiltro('pendientes')" [class.activo]="tareasService.filtro() === 'pendientes'">Pendientes</button>
+    <button (click)="cambiarFiltro('completadas')" [class.activo]="tareasService.filtro() === 'completadas'">Completadas</button>
   </div>
-  }
 
   <!-- Lista de tareas -->
-  @if (tareas$ | async; as tareas) {
   <ul class="lista-tareas">
-    @for (tarea of tareas; track tarea.id) {
+    @for (tarea of tareasService.tareasFiltradas(); track tarea.id) {
     <li [class.completada]="tarea.completada">
       <input type="checkbox" [checked]="tarea.completada" (change)="tareasService.toggleCompletada(tarea.id)" />
       <span>{{ tarea.texto }}</span>
@@ -999,7 +972,6 @@ export class TareasComponent {
     <li class="vacio">No hay tareas para mostrar</li>
     }
   </ul>
-  }
 </div>
 ```
 
