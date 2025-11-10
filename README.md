@@ -11,7 +11,7 @@
 
 ---
 
-## 📚 Módulo 1: Fundamentos de Observables
+## Fundamentos de Observables
 
 ### ¿Qué es un Observable?
 
@@ -48,7 +48,7 @@ miObservable$.subscribe({
 
 ---
 
-## 📚 Módulo 2: Operadores con `pipe`
+## Operadores con `pipe`
 
 Los operadores transforman los datos que fluyen por el Observable. Se encadenan usando `pipe()`.
 
@@ -91,7 +91,7 @@ numeros$
 
 ---
 
-## 📚 Módulo 3: HttpClient y Servicios
+## HttpClient y Servicios
 
 Angular usa Observables para todas las peticiones HTTP.
 
@@ -163,7 +163,7 @@ this.usuariosService
 
 ---
 
-## 📚 Módulo 4: Uso en Componentes
+## Uso en Componentes
 
 ### Componente con suscripción manual
 
@@ -227,7 +227,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
 
 ---
 
-## 📚 Módulo 5: `async pipe` y manejo reactivo
+## Async pipe y manejo reactivo
 
 El **`async pipe`** se suscribe automáticamente y se desuscribe cuando el componente se destruye. ¡No más fugas de memoria!
 
@@ -310,7 +310,7 @@ export class UsuariosReactiveComponent implements OnInit {
 
 ---
 
-## 💪 Ejercicios Prácticos
+## Ejercicios Prácticos
 
 ### Índice de Ejercicios
 
@@ -835,7 +835,7 @@ export class ProductosService {
 
 ---
 
-## 🎓 Desafío Final
+## Desafío Final
 
 Crea una aplicación completa de "Lista de Tareas" con estas características:
 
