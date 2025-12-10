@@ -48,6 +48,10 @@ miObservable$.subscribe({
 
 ---
 
+## Ejercicio 5: Evitar fugas de memoria
+
+### Solución
+
 ## Operadores con `pipe`
 
 Los operadores transforman los datos que fluyen por el Observable. Se encadenan usando `pipe()`.
@@ -172,14 +176,16 @@ import { Component, OnInit, OnDestroy } from "@angular/core";
 import { Subscription } from "rxjs";
 import { UsuariosService, Usuario } from "./usuarios.service";
 
+## Ejercicio 6: Combinar Observables
+
+### Solución
+
 @Component({
   selector: "app-usuarios",
   templateUrl: "./usuarios.component.html",
 })
 export class UsuariosComponent implements OnInit, OnDestroy {
   usuarios: Usuario[] = [];
-  cargando = true;
-  error: string | null = null;
 
   private suscripcion?: Subscription;
 
@@ -274,7 +280,6 @@ export class UsuariosReactiveComponent implements OnInit {
         error: null,
       })
     );
-  }
 }
 ```
 
