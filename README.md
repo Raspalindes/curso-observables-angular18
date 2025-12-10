@@ -184,15 +184,13 @@ import { UsuariosService, Usuario } from "./usuarios.service";
   selector: "app-usuarios",
   templateUrl: "./usuarios.component.html",
 })
-export class UsuariosComponent implements OnInit, OnDestroy {
+export class UsuariosComponent {
   usuarios: Usuario[] = [];
 
   private suscripcion?: Subscription;
 
-  constructor(private usuariosService: UsuariosService) {}
-
-  ngOnInit() {
-    this.suscripcion = this.usuariosService.obtenerUsuarios().subscribe({
+  constructor(private usuariosService: UsuariosService) {
+    this.suscripcion = this.usuariosService.obtenerUsuarios().pipe(takeUntilDestroyed()).subscribe({
       next: (datos) => {
         this.usuarios = datos;
         this.cargando = false;
@@ -204,10 +202,6 @@ export class UsuariosComponent implements OnInit, OnDestroy {
     });
   }
 
-  ngOnDestroy() {
-    // ¡MUY IMPORTANTE! Evita fugas de memoria
-    this.suscripcion?.unsubscribe();
-  }
 }
 ```
 
@@ -256,9 +250,8 @@ interface Estado {
   templateUrl: "./usuarios-reactive.component.html",
 })
 export class UsuariosReactiveComponent implements OnInit {
+  private readonly _usuariosService = inject(UsuariosService);
   estado$!: Observable<Estado>;
-
-  constructor(private usuariosService: UsuariosService) {}
 
   ngOnInit() {
     this.estado$ = this.usuariosService.obtenerUsuarios().pipe(
@@ -280,6 +273,7 @@ export class UsuariosReactiveComponent implements OnInit {
         error: null,
       })
     );
+  }
 }
 ```
 
