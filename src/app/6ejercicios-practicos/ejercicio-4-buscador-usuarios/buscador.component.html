@@ -1,0 +1,6 @@
+<input [formControl]="busqueda" placeholder="Buscar usuario..." />
+<ul>
+  <li *ngFor="let usuario of resultados$ | async">
+    {{ usuario.nombre }} - {{ usuario.email }}
+  </li>
+</ul>

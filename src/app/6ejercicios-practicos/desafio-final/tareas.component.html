@@ -1,0 +1,57 @@
+<div class="tareas-app">
+  <h1>Lista de Tareas Reactiva</h1>
+  <div class="agregar-tarea">
+    <input
+      type="text"
+      [(ngModel)]="nuevaTarea"
+      placeholder="Escribe una nueva tarea..."
+      (keyup.enter)="agregarTarea()"
+    />
+    <button (click)="agregarTarea()">Agregar</button>
+  </div>
+  <div class="buscador">
+    <input
+      type="text"
+      [(ngModel)]="busqueda"
+      (input)="actualizarBusqueda(busqueda)"
+      placeholder="Buscar tareas..."
+    />
+  </div>
+  <div class="filtros">
+    <button
+      (click)="cambiarFiltro('todas')"
+      [class.activo]="tareasService.filtro() === 'todas'"
+    >
+      Todas
+    </button>
+    <button
+      (click)="cambiarFiltro('pendientes')"
+      [class.activo]="tareasService.filtro() === 'pendientes'"
+    >
+      Pendientes
+    </button>
+    <button
+      (click)="cambiarFiltro('completadas')"
+      [class.activo]="tareasService.filtro() === 'completadas'"
+    >
+      Completadas
+    </button>
+  </div>
+  <ul class="lista-tareas">
+    @for (tarea of tareasService.tareasFiltradas(); track tarea.id) {
+    <li [class.completada]="tarea.completada">
+      <input
+        type="checkbox"
+        [checked]="tarea.completada"
+        (change)="tareasService.toggleCompletada(tarea.id)"
+      />
+      <span>{{ tarea.texto }}</span>
+      <button class="eliminar" (click)="tareasService.eliminarTarea(tarea.id)">
+        ✕
+      </button>
+    </li>
+    } @empty {
+    <li class="vacio">No hay tareas para mostrar</li>
+    }
+  </ul>
+</div>

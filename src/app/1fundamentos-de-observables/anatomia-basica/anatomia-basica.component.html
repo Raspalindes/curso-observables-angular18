@@ -1,0 +1,5 @@
+<h2>Ejemplo de Observable básico</h2>
+<button (click)="miObservable$.subscribe({ next: v => resultado = v })">
+  Emitir valor
+</button>
+<p *ngIf="resultado">Último valor emitido: {{ resultado }}</p>

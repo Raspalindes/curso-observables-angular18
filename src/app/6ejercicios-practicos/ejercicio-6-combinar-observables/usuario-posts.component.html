@@ -1,0 +1,10 @@
+@if (resultado().cargando) {
+<p>Cargando información...</p>
+} @else if (resultado().error) {
+<p class="error">{{ resultado().error }}</p>
+} @else {
+<h2>
+  Usuario {{ resultado().nombreUsuario }} tiene
+  {{ resultado().cantidadPosts }} posts
+</h2>
+}

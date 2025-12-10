@@ -1,0 +1,17 @@
+@if (estado().cargando) {
+<p>Cargando productos...</p>
+} @else if (estado().error) {
+<p class="error">{{ estado().error }}</p>
+} @else {
+<div class="productos-grid">
+  @for (producto of estado().productos; track producto.id) {
+  <div class="producto-card">
+    <img [src]="producto.image" [alt]="producto.title" />
+    <h3>{{ producto.title }}</h3>
+    <p class="precio">${{ producto.price }}</p>
+  </div>
+  } @empty {
+  <p>No hay productos disponibles</p>
+  }
+</div>
+}

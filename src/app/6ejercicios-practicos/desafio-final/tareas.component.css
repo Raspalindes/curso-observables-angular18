@@ -1,0 +1,22 @@
+.tareas-app {
+    margin: 0 auto;
+}
+
+.agregar-tarea,
+.buscador,
+.filtros {
+    margin-bottom: 1rem;
+}
+
+.lista-tareas {
+    list-style: none;
+    padding: 0;
+}
+
+.lista-tareas li.completada span {
+    text-decoration: line-through;
+}
+
+.lista-tareas li.vacio {
+    text-align: center;
+}

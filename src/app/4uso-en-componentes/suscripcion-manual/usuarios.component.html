@@ -1,0 +1,13 @@
+<div class="container">
+  @if (cargando()) {
+  <p>Cargando usuarios...</p>
+  } @else if (error()) {
+  <p class="error">{{ error() }}</p>
+  } @else {
+  <ul>
+    @for (usuario of usuarios(); track usuario.id) {
+    <li>{{ usuario.nombre }} - {{ usuario.email }}</li>
+    }
+  </ul>
+  }
+</div>
