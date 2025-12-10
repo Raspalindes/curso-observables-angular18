@@ -612,7 +612,7 @@ import { interval, Subscription } from "rxjs";
 
 @Component({
   selector: "app-contador",
-  template: `<h2>Contador: {{ contador }}</h2>`,
+  templateUrl: "./contador.component.html",
 })
 export class ContadorComponent implements OnInit, OnDestroy {
   contador = 0;
@@ -628,6 +628,11 @@ export class ContadorComponent implements OnInit, OnDestroy {
     this.suscripcion?.unsubscribe();
   }
 }
+```
+
+```html
+<!-- contador.component.html -->
+<h2>Contador: {{ contador }}</h2>
 ```
 
 **Solución 2: Usando async pipe (mejor práctica)**
