@@ -99,11 +99,11 @@ Angular usa Observables para todas las peticiones HTTP.
 
 ```typescript
 // usuarios.service.ts
-import { Injectable } from "@angular/core";
+
+import { Injectable, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { Observable } from "rxjs";
+import { Observable, of } from "rxjs";
 import { map, catchError } from "rxjs/operators";
-import { of } from "rxjs";
 
 export interface Usuario {
   id: number;
@@ -116,8 +116,7 @@ export interface Usuario {
 })
 export class UsuariosService {
   private apiUrl = "http://localhost:3000/usuarios";
-
-  constructor(private http: HttpClient) {}
+  private http = inject(HttpClient);
 
   obtenerUsuarios(): Observable<Usuario[]> {
     return this.http.get<Usuario[]>(this.apiUrl).pipe(
@@ -329,7 +328,7 @@ export class UsuariosReactiveComponent implements OnInit {
 
 **Nivel: Principiante**
 
-Tienes un Observable que emite números del 1 al 10. Usa `pipe` y `map` para:
+Tienes un Observable que emite números del 1 al 10. Usa `pipe`, `map` y `filter` para:
 
 1. Multiplicar cada número por 3
 2. Sumarle 5 al resultado
@@ -571,7 +570,7 @@ import { interval } from "rxjs";
 
 @Component({
   selector: "app-contador",
-  template: `<h2>Contador: {{ contador }}</h2>`,
+  templateUrl: "./contador.component.html",
 })
 export class ContadorComponent implements OnInit {
   contador = 0;
@@ -582,6 +581,11 @@ export class ContadorComponent implements OnInit {
     });
   }
 }
+```
+
+```html
+<!-- contador.component.html -->
+<h2>Contador: {{ contador }}</h2>
 ```
 
 **Preguntas:**
@@ -630,11 +634,16 @@ import { map } from "rxjs/operators";
 
 @Component({
   selector: "app-contador",
-  template: `<h2>Contador: {{ contador$ | async }}</h2>`,
+  templateUrl: "./contador.component.html",
 })
 export class ContadorComponent {
   contador$: Observable<number> = interval(1000).pipe(map((_, index) => index + 1));
 }
+```
+
+```html
+<!-- contador.component.html -->
+<h2>Contador: {{ contador$ | async }}</h2>
 ```
 
 </details>
